@@ -9,19 +9,66 @@ library(tidyverse)
 ```
 
 ## Problem 1
-```{r, include = FALSE}
+```{r data import, include = FALSE}
 library(p8105.datasets) 
 data("ny_noaa") 
+
+ny_noaa #view variable types
+
+#Make sure to comment on structure of data
+# variable units from https://p8105.com/dataset_noaa.html
 ```
 
 **Dataset Description**
 
-* size and structure of the data
-* describe some key variables
-* indicate the extent to which missing data is an issue
+The `ny_noaa` dataset, which was uploaded from the _p8105.dataset_ package, contains `r ncol(ny_noaa)` variables and `r nrow(ny_noaa)` observations. Character variables include weather station ID (`id`), `tmax`, and `tmin`. Integer variables include `prcp`, `snow`, and `snwd`. There is also a `date` variable, which is entered in YYYY-MM-DD format. After viewing the variable types in the dataset, I converted `tmax` and `tmin` into doubles. Using `summary()`, we get the following information:
+
+```{r convert variables, include = FALSE}
+ny_noaa_df = ny_noaa |>
+  mutate(
+    tmax = as.double(tmax),
+    tmin = as.double(tmin))
+
+summary(ny_noaa_df)
+```
+
+* Precipitation (`prcp`) ranges from 0 to 22860 tenths of mm. The mean is 29.82 tenths of mm. 145838 entries have NA values for this variable.
+* Snowfall (`snow`) ranges from -13 mm to 10160 mm. The mean is 5 mm. 381221 entries have NA values for this variable.
+* Snow depth (`snwd`) ranges from 0 mm to 9195 mm. The mean is 37.3 mm. 591786 entries have NA values for this variable. 
+* Maximum temperature (`tmax`) ranges from -389 to 600 tenths of degrees C with a mean of 139.8. 1132358 entries have  NA values for this variable.
+* Mininun temperature (`tmin`) ranges from -594 to 600 tenths of degrees C with a mean of 30.3. 1134420 entries have  NA values for this variable.
+
+As you can see by looking at the number of entries with NAs for each of the variables above, missing data is quite an issue in this dataset. 
 
 #### Task 1
-Do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units. For snowfall, what are the most commonly observed values? Why?
+
+
+```{r split date, include =FALSE}
+ny_noaa_updated = ny_noaa_df |>
+   separate(date, into = c("year", "month", "day"), sep = "-")
+```
+
+The `date` variable is split into 3 different variables: `year`, `month`, and `day` in the dataset `ny_noaa_updated`.
+
+```{r assign units, include = FALSE}
+ny_noaa_df = ny_noaa_df |>
+  mutate(
+    tmax = tmax/10, #changed units of temperature to °C
+    tmin = tmin/10, #changed units of temperature to °C
+    prcp = prcp/10) #changed units of temperature to mm
+```
+
+To ensure observations for temperature, precipitation, and snowfall are given in reasonable units, I converted the values in `tmax` and `tmin` to have °C as the units (instead of tenths of °C). Similarly, the unit for precipitation (`prcp`) has been converted to just mm. Snowfall is in reasonable units (mm).
+
+```{r snowcount, include = FALSE}
+ny_noaa_sf = ny_noaa_df |>
+  mutate(snow = as.factor(snow)) |>
+  count(snow, sort = TRUE)
+```
+
+For snowfall (`snow`), the top 3 most commonly observed values are 0mm (77.39%, n=2008508), 25mm (1.20%, n=31022), and 13mm (0.89%, n=23095). It may be important to note that 14.69% of the observations had NAs (n=381221). 
+
+The relatively high percentage of empty observations for snowfall is due to inconsistent data collection of each weather station. Some of these weather stations may collect a portion of the variables. In general, it makes sense that most of the observations recorded by the New York state weather stations had 0mm for snow since the data is collected from the time period between January 1, 1981 through December 31, 2010 and not just during winter months. 
 
 #### Task 2
 Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers? 
