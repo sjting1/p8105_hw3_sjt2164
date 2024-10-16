@@ -314,7 +314,7 @@ distinct(merged_bikes, start_station_name) #2241 stations
 distinct(merged_bikes, end_station_name) #2253 stations
 ```
 
-Before merging, `year_month` variable is created for each individual dataset. After merging the 4 datasets, the resulting data is stored in `merged_bikes` (`r nrow(merged_bikes)` rows x `r ncol(merged_bikes)` columns).
+Before merging, `year_month` variable is created for each individual dataset. After merging the 4 datasets, the resulting data is stored in `merged_bikes` (`r nrow(merged_bikes)` rows x `r ncol(merged_bikes)` columns). Data for each entry of `ride_id` include:
 
 * `rideable_types` include classic nike or electric bike
 * `weekdays` range from Monday to Sunday
@@ -326,7 +326,24 @@ Before merging, `year_month` variable is created for each individual dataset. Af
 
 #### Task 2
 
-Produce a reader-friendly table showing the total number of rides in each combination of year and month separating casual riders and Citi Bike members. Comment on these results. 
+**Total number of rides by Casual riders and Citi Bike members**
+
+```{r, echo = FALSE, message = FALSE}
+table = merged_bikes |>
+  group_by(year_month, member_casual) |> 
+  summarize(total_rides = n()) |>
+  pivot_wider(
+    names_from = "year_month", 
+    values_from = "total_rides") |>
+  select(member_casual, Jan2020, July2020, Jan2024, July2024) |>
+  janitor::adorn_totals("row")
+
+knitr::kable(table, col.names = c("Casual rider or Citi Bike member", "Jan 2020", "July 2020", "Jan 2024", "July 2024")) 
+```
+
+Citi Bike members make a larger proportion of the total rides for all 4 month-year combination. 
+In the month of July for both 2020 and 2024, there is a higher number of rides compared to the month of January in those years. In this table, the highest total number of rides is in July 2024. The lowest number of rides is in January 2020. There are more rides in 2024 than in 2020, January and July rides combined.  
+
 
 #### Task 3
 
