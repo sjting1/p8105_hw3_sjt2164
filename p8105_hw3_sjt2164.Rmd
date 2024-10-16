@@ -216,7 +216,32 @@ merged_df |>
 * At the "More than high school" level, the average age is higher in males when compared to females. 
 
 #### Task 3
-Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate across minutes to create a total activity variable for each participant. Plot these total activities (y-axis) against age (x-axis); your plot should compare men to women and have separate panels for each education level. Include a trend line or a smooth to illustrate differences. Comment on your plot. 
+
+Since traditional analyses of accelerometer data focus on the total activity over the day, values in `min1` through `min1440` for each participant was summed into the variable `total_activity`. This was done by grouping `SEQN`, `sex`, `age`, `BMI`, and `education`.
+
+```{r, echo = FALSE, message = FALSE}
+merged_df |>
+    pivot_longer(
+    cols = min1:min1440, 
+    names_to = "min_number", 
+    values_to = "value") |>
+    group_by(SEQN, sex, age, BMI, education) |>
+    summarize(total_activity = sum(value)) |>
+  ggplot(aes(x = age, y = total_activity, color = sex)) + 
+   geom_point(alpha = 0.5) +
+    geom_smooth(se = FALSE) +
+    facet_grid(. ~ education) +
+  labs(title = "Male vs. Female: Total Activity and Age Across Education Levels",
+       x = "Age (years)",
+       y = "Total Activity") 
+
+```
+
+Looking at the plot above, we see some similarities and differences between female and male total activity distribution across age at each education level. 
+
+* At the "High school equivalent" level, females have higher total activity across different ages compared to males. Total activity for female peaked around age 40 then declined with increased age. A small increase is seen around age 70. Males also follow a similar trend, peaking around 40 years then declining to a plateau. 
+* At the "Less than high school" level, total activity was higher in females compared to males before 40 years of age. Afterwards, males had higher total activity, peaking at age 60 years old. 
+* At the "More than high school" level, females generally have higher total activity compared to males. Both genders experience a general decline in total activity between 50-60 years old. 
 
 #### Task 4
 Accelerometer data allows the inspection activity over the course of the day. Make a three-panel plot that shows the 24-hour activity time courses for each education level and use color to indicate sex. Describe in words any patterns or conclusions you can make based on this graph; including smooth trends may help identify differences. 
