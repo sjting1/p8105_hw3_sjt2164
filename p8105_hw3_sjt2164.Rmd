@@ -24,12 +24,12 @@ ny_noaa #view variable types
 The `ny_noaa` dataset, which was uploaded from the _p8105.dataset_ package, contains `r ncol(ny_noaa)` variables and `r nrow(ny_noaa)` observations. Character variables include weather station ID (`id`), `tmax`, and `tmin`. Integer variables include `prcp`, `snow`, and `snwd`. There is also a `date` variable, which is entered in YYYY-MM-DD format. After viewing the variable types in the dataset, I converted `tmax` and `tmin` into doubles. Using `summary()`, we get the following information:
 
 ```{r convert variables, include = FALSE}
-ny_noaa_df = ny_noaa |>
+ny_noaa = ny_noaa |>
   mutate(
     tmax = as.double(tmax),
     tmin = as.double(tmin))
 
-summary(ny_noaa_df)
+summary(ny_noaa)
 ```
 
 * Precipitation (`prcp`) ranges from 0 to 22860 tenths of mm. The mean is 29.82 tenths of mm. 145838 entries have NA values for this variable.
@@ -42,26 +42,22 @@ As you can see by looking at the number of entries with NAs for each of the vari
 
 #### Task 1
 
-
 ```{r split date, include =FALSE}
-ny_noaa_updated = ny_noaa_df |>
-   separate(date, into = c("year", "month", "day"), sep = "-")
-```
-
-The `date` variable is split into 3 different variables: `year`, `month`, and `day` in the dataset `ny_noaa_updated`.
-
-```{r assign units, include = FALSE}
-ny_noaa_df = ny_noaa_df |>
+ny_noaa = ny_noaa |>
+   separate(date, into = c("year", "month", "day"), sep = "-") |>
   mutate(
     tmax = tmax/10, #changed units of temperature to °C
     tmin = tmin/10, #changed units of temperature to °C
     prcp = prcp/10) #changed units of temperature to mm
+
 ```
+
+In the dataset, I created 3 additional date variables by splitting `date` into `year`, `month`, and `day`.
 
 To ensure observations for temperature, precipitation, and snowfall are given in reasonable units, I converted the values in `tmax` and `tmin` to have °C as the units (instead of tenths of °C). Similarly, the unit for precipitation (`prcp`) has been converted to just mm. Snowfall is in reasonable units (mm).
 
 ```{r snowcount, include = FALSE}
-ny_noaa_sf = ny_noaa_df |>
+ny_noaa_sf = ny_noaa |>
   mutate(snow = as.factor(snow)) |>
   count(snow, sort = TRUE)
 ```
@@ -71,7 +67,13 @@ For snowfall (`snow`), the top 3 most commonly observed values are 0mm (77.39%, 
 The relatively high percentage of empty observations for snowfall is due to inconsistent data collection of each weather station. Some of these weather stations may collect a portion of the variables. In general, it makes sense that most of the observations recorded by the New York state weather stations had 0mm for snow since the data is collected from the time period between January 1, 1981 through December 31, 2010 and not just during winter months. 
 
 #### Task 2
-Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers? 
+
+```{r two-panel plot}
+
+#average max temperature in January and in July in each station across years.
+```
+
+Is there any observable / interpretable structure? Any outliers? 
 
 #### Task 3
 Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year. 
