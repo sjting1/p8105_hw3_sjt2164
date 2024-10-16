@@ -6,6 +6,7 @@ date: 10/16/2024 (Due date)
 
 ```{r setup, include = FALSE}
 library(tidyverse)
+library(ggridges)
 ```
 
 ## Problem 1
@@ -60,20 +61,53 @@ To ensure observations for temperature, precipitation, and snowfall are given in
 ny_noaa_sf = ny_noaa |>
   mutate(snow = as.factor(snow)) |>
   count(snow, sort = TRUE)
+
 ```
 
 For snowfall (`snow`), the top 3 most commonly observed values are 0mm (77.39%, n=2008508), 25mm (1.20%, n=31022), and 13mm (0.89%, n=23095). It may be important to note that 14.69% of the observations had NAs (n=381221). 
 
 The relatively high percentage of empty observations for snowfall is due to inconsistent data collection of each weather station. Some of these weather stations may collect a portion of the variables. In general, it makes sense that most of the observations recorded by the New York state weather stations had 0mm for snow since the data is collected from the time period between January 1, 1981 through December 31, 2010 and not just during winter months. 
 
-#### Task 2
+#### Task 2 
 
-```{r two-panel plot}
+```{r two-panel plot, echo = FALSE, message = FALSE, warning = FALSE}
+Jan_july = ny_noaa |>
+  filter(month == "01" | month == "07") |>
+  mutate(month = case_match(
+    month, 
+    "07" ~ "July",
+    "01" ~ "January"))
 
-#average max temperature in January and in July in each station across years.
+avg_tmax = Jan_july |> #calc avg tmax for each station by month and year
+  group_by(id, month, year) |>
+  summarize(avg_tmax = mean(tmax),.groups = 'drop')
+
+ggplot(avg_tmax, aes(x = year, y = avg_tmax)) + 
+  geom_point(aes(color = month), alpha = 0.5) +
+  geom_smooth(se = FALSE) +
+  scale_x_discrete(
+    breaks = c("1981", "1991", "2001", "2010"), # make axis easier to read
+    labels = c("1981", "1991", "2001", "2010")) + 
+  facet_grid(. ~ month) +
+  labs(title = "Avg Max Temp of Weater Stations from 1981 to 2010, January vs. July",
+       x = "Year",
+       y = "Avg Max Temp in Celsius") 
 ```
 
-Is there any observable / interpretable structure? Any outliers? 
+There seem to be a few outliers in the January and July plots. For example, in January 1982, there is a data point that is less than -10 degrees C. In January 2008, there is another outlier with an average max temp of < -5 degrees C. For the July plot, we see more outliers than in the January plot. In particular, in July of 1988, there is an outlier with an average max temperature that is less than 15 degrees C.  
+
+```{r geom_hex, echo = FALSE, message = FALSE, warning = FALSE}
+ggplot(avg_tmax, aes(x = year, y = avg_tmax)) +
+  geom_hex() +
+  scale_x_discrete(
+    breaks = c("1981", "1991", "2001", "2010"), # make axis easier to read
+    labels = c("1981", "1991", "2001", "2010")) + 
+  facet_grid(. ~ month) +
+  labs(title = "Avg Max Temp of Weater Stations from 1981 to 2010, January vs. July",
+       x = "Year",
+       y = "Avg Max Temp in Celsius") 
+```
+Using the function `geom_hex()`, we see that the average max temperature in July seems to be fairly consistent among the weather stations across the years from 1981 to 2010 with a few outliers. For the January plot, we see more variation.
 
 #### Task 3
 Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year. 
