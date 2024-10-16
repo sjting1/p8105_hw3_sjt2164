@@ -7,6 +7,7 @@ date: 10/16/2024 (Due date)
 ```{r setup, include = FALSE}
 library(tidyverse)
 library(ggridges)
+library(patchwork)
 ```
 
 ## Problem 1
@@ -110,8 +111,35 @@ ggplot(avg_tmax, aes(x = year, y = avg_tmax)) +
 Using the function `geom_hex()`, we see that the average max temperature in July seems to be fairly consistent among the weather stations across the years from 1981 to 2010 with a few outliers. For the January plot, we see more variation.
 
 #### Task 3
-Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year. 
 
+```{r fulldata plot, echo = FALSE, message = FALSE, warning = FALSE}
+plot1 = ggplot(ny_noaa, aes(x = tmin, y = tmax)) +
+  geom_hex() +
+  labs(title = "Temperature Distribution",
+       x = "Minimum Temperature (°C)",
+       y = "Maximum Temperature (°C)")
+```
+
+```{r snowfall plot, echo = FALSE, message = FALSE, warning = FALSE}
+snowf = ny_noaa |>
+  mutate(snowfall = ifelse(snow > 0, "Greater than 0mm", "Less than 0mm")) 
+
+plot2 = ggplot(snowf, aes(x = year, y = snow, fill = snowfall)) +
+  geom_hex() +
+  scale_x_discrete(
+    breaks = c("1981", "1991", "2001", "2010"), # make axis easier to read
+    labels = c("1981", "1991", "2001", "2010")) + 
+  labs(title = "Snowfall Distribution",
+       x = "Year",
+       y = "Snowfall (mm)") 
+
+#combine plots
+plot1 + plot2
+
+```
+The plot on the left shows the distribution of minimum temperature and maximum temperature for the entire dataset. 
+
+The plot on the right shows the distribution of snowfall in mm across the years from 1981 to 2010. Outliers can be seen for snowfall greater than 0mm.  
 
 ## Problem 2
 ```{r demo setup, include = FALSE}
