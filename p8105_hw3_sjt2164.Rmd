@@ -347,7 +347,17 @@ In the month of July for both 2020 and 2024, there is a higher number of rides c
 
 #### Task 3
 
-Make a table showing the 5 most popular starting stations for July 2024; include the number of rides originating from these stations. 
+**Top 5 Most Popular Starting Stations for July 2024**
+
+```{r, echo = FALSE}
+popular_stations = merged_bikes |>
+  filter(year_month == "July2024") |>
+  count(start_station_name, sort = TRUE) |>
+  slice(1:5)
+
+knitr::kable(popular_stations, col.names = c("Starting Station", "Number of Rides From This Station")) 
+```
+The table above shows 5 stations that were most popular in July 2024. The number of rides that originated from each of the stations is listed in the table. 
 
 #### Task 4
 Make a plot to investigate the effects of day of the week, month, and year on median ride duration. This plot can include one or more panels, but should facilitate comparison across all variables of interest. Comment on your observations from this plot. 
