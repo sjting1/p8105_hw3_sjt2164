@@ -172,7 +172,7 @@ accel_df # all variables are doubles
 
 The two dataset are then merged into the `merged_df` dataset, which contains all orignially observed variables. Participants less than 21 years old and those with missing demographic data (those with NAs for BMI and education, as mentioned above) are excluded. `SEQN`, `sex`, and `education` are converted into factors in preparation for generating tables and plots.
 
-```{r merged, include = FALSE}
+```{r merged}
 merged_df = merge(demo_df, accel_df, by = "SEQN", all = TRUE) |>
   filter(age >= 21) |>
    drop_na("BMI", "education") |> #know for summary(demo_df) that there are NAs in these var
@@ -191,7 +191,7 @@ merged_df = merge(demo_df, accel_df, by = "SEQN", all = TRUE) |>
 
 **Number of Men vs. Women per Education Category**
 
-```{r, echo = FALSE}
+```{r gender table}
 gender = merged_df |>
   mutate(Education = education) |>
   janitor::tabyl(Education, sex)
@@ -205,7 +205,7 @@ knitr::kable(gender)
 
 **Age Distributions for Men vs. Women per Education Category**
 
-```{r age distribution, echo = FALSE}
+```{r age distribution}
 merged_df |>
   ggplot(aes(x = education, y = age, fill = sex)) + 
   geom_boxplot() +
@@ -220,9 +220,9 @@ merged_df |>
 
 #### Task 3
 
-Since traditional analyses of accelerometer data focus on the total activity over the day, values in `min1` through `min1440` for each participant was summed into the variable `total_activity`. This was done by grouping `SEQN`, `sex`, `age`, `BMI`, and `education`.
+Since traditional analyses of accelerometer data focus on the total activity over the day, values in `min1` through `min1440` for each participant was summed into a new variable called `total_activity` in the `merged_df_updated` dataset. This was done by grouping `SEQN`, `sex`, `age`, `BMI`, and `education`.
 
-```{r total activity, echo = FALSE, message = FALSE}
+```{r total activity}
 merged_df_updated = merged_df |>
     pivot_longer(
     cols = min1:min1440, 
@@ -251,7 +251,7 @@ Looking at the plot above, we see some similarities and differences between fema
 #### Task 4
 
 
-```{r 24-hr activity, echo = FALSE, message = FALSE}
+```{r 24-hr activity}
 merged_df_updated |>
   mutate(
     min_number = substring(min_number, 4),
@@ -300,7 +300,7 @@ July2024_df =
 * `Jan2024_df` (`r nrow(Jan2024_df)` rows x `r ncol(Jan2024_df)` columns)
 * `July2024_df` (`r nrow(July2024_df)` rows x `r ncol(July2024_df)` columns)
 
-```{r merged bikes, include = FALSE}
+```{r merged bikes, message = FALSE}
 merged_bikes = bind_rows(
   Jan2020_df, July2020_df, Jan2024_df, July2024_df) |>
   mutate(
@@ -310,7 +310,9 @@ merged_bikes = bind_rows(
     member_casual = as.factor(member_casual),
     weekdays = as.factor(weekdays),
     rideable_type = as.factor(rideable_type))
+```
 
+```{r check, include = FALSE}
 summary(merged_bikes)
 
 distinct(merged_bikes, start_station_name) #2241 stations
@@ -331,7 +333,7 @@ Before merging, `year_month` variable is created for each individual dataset. Af
 
 **Total number of rides by Casual riders and Citi Bike members**
 
-```{r, echo = FALSE, message = FALSE}
+```{r, message = FALSE}
 table = merged_bikes |>
   group_by(year_month, member_casual) |> 
   summarize(total_rides = n()) |>
@@ -352,7 +354,7 @@ In the month of July for both 2020 and 2024, there is a higher number of rides c
 
 **Top 5 Most Popular Starting Stations for July 2024**
 
-```{r popular station, echo = FALSE}
+```{r popular station}
 popular_stations = merged_bikes |>
   filter(year_month == "Jul2024") |>
   count(start_station_name, sort = TRUE) |>
@@ -364,7 +366,7 @@ The table above shows 5 stations that were most popular in July 2024. The number
 
 #### Task 4
 
-```{r plot, echo = FALSE, message = FALSE}
+```{r plot, message = FALSE}
 dates_df = merged_bikes |>
   mutate(year = substring(year_month, 4),
          month = substring(year_month, 1,3),
@@ -398,7 +400,7 @@ There is a smaller difference between the two months across all days of the week
 
 #### Task 5
 
-```{r setup, echo = FALSE}
+```{r setup}
 plot_setup = dates_df |>
   filter(year == 2024) |>
   mutate(Membership = member_casual, 
@@ -413,9 +415,7 @@ plot_setup = dates_df |>
     "member" ~ "Citi Bike Member"))
 ```
 
-The figure above shows the impact of month, membership status, and bike type on the distribution of ride duration.
-
-```{r}
+```{r boxplot, message = FALSE}
 # month, member_casual, rideable_type, duration
 BOX_plot = ggplot(plot_setup, aes(y = duration, x = Membership)) +
   geom_boxplot() +
@@ -437,6 +437,8 @@ box_closeup =
 
 box_closeup
 ```
+
+The figures (overview and close-up view) above shows the impact of month, membership status, and bike type on the distribution of ride duration.
 
 Looking at all 4 panels of the figure, we see that the distribution of ride duration is skewed. When stratified by membership status, the bulk of the data falls in the 4 minutes to 20 minutes range for Classic Bikes users and in the 4 minutes to 17 minutes range for Electric Bike users. Looking at the close-up figure, we see that casual riders have a higher mean ride duration than Citi Bike members in all four panels.
 
