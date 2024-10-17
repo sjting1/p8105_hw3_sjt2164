@@ -4,28 +4,31 @@ output: github_document
 date: 10/16/2024 (Due date)
 ---
 
+_Note: This homework assignment used the following libraries: `tidyverse`, `ggridges`, `patchwork`, and `p8105.datasets`.
+
 ```{r library setup, include = FALSE}
 library(tidyverse)
 library(ggridges)
 library(patchwork)
+library(p8105.datasets) 
 ```
 
 ## Problem 1
 ```{r data import, include = FALSE}
-library(p8105.datasets) 
 data("ny_noaa") 
 
 ny_noaa #view variable types
 
-#Make sure to comment on structure of data
+distinct(ny_noaa, id) #747 weather stations
+
 # variable units from https://p8105.com/dataset_noaa.html
 ```
 
 **Dataset Description**
 
-The `ny_noaa` dataset, which was uploaded from the _p8105.dataset_ package, contains `r ncol(ny_noaa)` variables and `r nrow(ny_noaa)` observations. Character variables include weather station ID (`id`), `tmax`, and `tmin`. Integer variables include `prcp`, `snow`, and `snwd`. There is also a `date` variable, which is entered in YYYY-MM-DD format. After viewing the variable types in the dataset, I converted `tmax` and `tmin` into doubles. Using `summary()`, we get the following information:
+The `ny_noaa` dataset, which was uploaded from the _p8105.dataset_ package, contains `r ncol(ny_noaa)` variables and `r nrow(ny_noaa)` observations with data from 747 unique NYC weather stations. Character variables include weather station ID (`id`), maximum temperature (`tmax`), and minmum temperature (`tmin`). Both temperature variables are measured in tenths of degrees Celsius. Integer variables include precipitation in tenths of mm (`prcp`), snowfall in mm (`snow`), and snow depth in mm (`snwd`). There is also a `date` variable, which is entered in YYYY-MM-DD format. After viewing the variable types in the dataset, I converted `tmax` and `tmin` into doubles. Using `summary()`, we get the following information:
 
-```{r convert variables, include = FALSE}
+```{r convert variables}
 ny_noaa = ny_noaa |>
   mutate(
     tmax = as.double(tmax),
@@ -34,17 +37,17 @@ ny_noaa = ny_noaa |>
 summary(ny_noaa)
 ```
 
-* Precipitation (`prcp`) ranges from 0 to 22860 tenths of mm. The mean is 29.82 tenths of mm. 145838 entries have NA values for this variable.
-* Snowfall (`snow`) ranges from -13 mm to 10160 mm. The mean is 5 mm. 381221 entries have NA values for this variable.
-* Snow depth (`snwd`) ranges from 0 mm to 9195 mm. The mean is 37.3 mm. 591786 entries have NA values for this variable. 
-* Maximum temperature (`tmax`) ranges from -389 to 600 tenths of degrees C with a mean of 139.8. 1132358 entries have  NA values for this variable.
-* Mininun temperature (`tmin`) ranges from -594 to 600 tenths of degrees C with a mean of 30.3. 1134420 entries have  NA values for this variable.
+As you can see, there are a number of entries with missing values (NA) for the variables above. Thus, missing data is quite an issue in this dataset.
 
-As you can see by looking at the number of entries with NAs for each of the variables above, missing data is quite an issue in this dataset. 
+* `prcp`: 145838 NA entries
+* `snow`: 381221 NA entries
+* `snwd`: 591786 NA entries  
+* `tmax`: 1132358 NA entries
+* `tmin`: 1134420 NA entries
 
-#### Task 1
+#### Task 1:
 
-```{r split date, include =FALSE}
+```{r split date}
 ny_noaa = ny_noaa |>
    separate(date, into = c("year", "month", "day"), sep = "-") |>
   mutate(
